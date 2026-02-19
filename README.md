@@ -22,3 +22,9 @@ PHP compatibility runner for Data Contracts.
 Runner-owned implementation contracts live in:
 
 - `specs/impl/php/`
+
+## Source Moved From data-contracts
+
+Implementation narratives previously documented in `data-contracts/docs/impl/php.md`
+are owned here. See `docs/migration_from_data_contracts.md` for migration
+mapping.
