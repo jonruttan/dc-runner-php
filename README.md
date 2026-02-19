@@ -16,3 +16,9 @@ PHP compatibility runner for Data Contracts.
 
 - `./runner_adapter.sh conformance ...`
 - `./runner_adapter.sh spec-runner ...`
+
+## Implementation Specs
+
+Runner-owned implementation contracts live in:
+
+- `specs/impl/php/`
