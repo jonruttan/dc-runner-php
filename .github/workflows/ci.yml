@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  compatibility-php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PHP + yaml extension
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli php-yaml
+          php -m | grep -i ^yaml
+      - name: Lint
+        run: |
+          php -l conformance_runner.php
+          php -l spec_runner.php
+      - name: Smoke
+        run: |
+          php conformance_runner.php --help || true
+          php spec_runner.php --help || true
