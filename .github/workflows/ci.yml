@@ -16,10 +16,10 @@ jobs:
           sudo apt-get install -y php-cli php-yaml
           php -m | grep -i ^yaml
       - name: Lint
-        run: |
-          php -l conformance_runner.php
-          php -l spec_runner.php
+        run: make lint
       - name: Smoke
-        run: |
-          php conformance_runner.php --help || true
-          php spec_runner.php --help || true
+        run: make smoke
+      - name: Spec Sync Check
+        run: make spec-sync-check
+      - name: Compatibility Check
+        run: make compat-check

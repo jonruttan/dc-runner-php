@@ -1,30 +1,93 @@
 # dc-runner-php
 
-PHP compatibility runner for Data Contracts.
+PHP implementation lane for Data Contracts runner compatibility.
 
-## Scope
+## What This Project Is
 
-- Owns PHP compatibility execution surfaces formerly hosted in monorepo path `runners/php`.
-- Non-blocking lane relative to required Rust lane.
+`dc-runner-php` provides PHP runner interfaces and compatibility checks for Data
+Contracts workflows. It verifies behavior against a pinned upstream specs
+snapshot so compatibility changes are explicit and reviewable.
 
-## Commands
+## What Is Data Contracts?
 
-- `php conformance_runner.php --cases specs/conformance/cases --case-formats md --out .artifacts/conformance-parity-php.json`
-- `php spec_runner.php --cases specs/impl/php/cases --case-formats md --out .artifacts/php-spec-runner.json`
+[Data Contracts](https://github.com/jonruttan/data-contracts) is the canonical
+contracts/specifications project for the runner ecosystem. It owns normative
+contracts, schemas, conformance surfaces, and governance policy.
 
-## Adapter
+This repository does not redefine those canonical contracts. It owns PHP
+implementation behavior and compatibility verification against pinned upstream
+versions.
 
-- `./runner_adapter.sh conformance ...`
-- `./runner_adapter.sh spec-runner ...`
+## Responsibility Boundary
 
-## Implementation Specs
+- `data-contracts` owns canonical runner specs/contracts and evolution.
+- `dc-runner-php` owns PHP implementation behavior and compatibility checks.
 
-Runner-owned implementation contracts live in:
+## Stable Interface Contract
 
-- `specs/impl/php/`
+- Public runner entrypoint: `/runner_adapter.sh`
+- Stable exit code semantics:
+  - `0` success
+  - `1` runtime/tool failure
+  - `2` invalid usage/config
+
+## Quickstart
+
+Core checks:
+
+```sh
+make lint
+make smoke
+```
+
+Full local verification:
+
+```sh
+make verify
+```
+
+## Upstream Snapshot Workflow
+
+Pinned upstream compatibility artifacts:
+
+- `/specs/upstream/data_contracts_lock_v1.yaml`
+- `/specs/upstream/data-contracts.manifest.sha256`
+- `/specs/upstream/data-contracts/`
+
+Update pinned snapshot:
+
+```sh
+make spec-sync TAG=<upstream-tag-or-ref> SOURCE=<path-or-url>
+```
+
+Validate lock/snapshot integrity:
+
+```sh
+make spec-sync-check
+```
+
+Run compatibility verification:
+
+```sh
+make compat-check
+```
+
+## Documentation Map
+
+- Architecture: `/docs/architecture.md`
+- Commands: `/docs/commands.md`
+- Compatibility: `/docs/compatibility.md`
+- Release operations: `/docs/release.md`
+- Contributor workflow: `/CONTRIBUTING.md`
+
+## Specs Map
+
+- Local runner-owned implementation specs:
+  - `/specs/impl/php/`
+- Upstream pinned compatibility snapshot:
+  - `/specs/upstream/data-contracts/`
 
 ## Source Moved From data-contracts
 
-Implementation narratives previously documented in `data-contracts/docs/impl/php.md`
-are owned here. See `docs/migration_from_data_contracts.md` for migration
-mapping.
+Implementation narratives previously in `data-contracts/docs/impl/php.md` are
+owned here. See `/docs/migration_from_data_contracts.md`.
