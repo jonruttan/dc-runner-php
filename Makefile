@@ -2,25 +2,20 @@
 .DEFAULT_GOAL := help
 SOURCE ?=
 
-help:
-	@echo "lint  - php syntax checks"
-	@echo "smoke - run help output for both entrypoints"
-	@echo "spec-sync TAG=<upstream-tag> [SOURCE=<path-or-url>] - sync pinned upstream specs snapshot"
-	@echo "spec-sync-check [SOURCE=<path-or-url>] - verify upstream lock/snapshot integrity"
-	@echo "compat-check [SOURCE=<path-or-url>] - verify runner compatibility against pinned upstream snapshot"
-	@echo "runner-spec-sync TAG=<upstream-tag> [SOURCE=<path-or-url>] - sync pinned runner-specific specs snapshot"
-	@echo "runner-spec-check [SOURCE=<path-or-url>] - verify runner-specific specs lock/snapshot integrity"
-	@echo "verify - lint + smoke + spec-sync-check + compat-check + runner-spec-check"
+help: ## Display this help section
+	@awk 'BEGIN {FS = ":.*?## "}; /^##@/ {printf "\n\033[33m%s\033[0m\n", substr($$0,5)}; /^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[32m%-36s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-lint:
+##@ Core
+lint: ## Run php syntax checks
 	php -l conformance_runner.php
 	php -l spec_runner.php
 
-smoke:
+smoke: ## Run help output for both entrypoints
 	./runner_adapter.sh conformance --help
 	./runner_adapter.sh spec-runner --help
 
-spec-sync:
+##@ Specs
+spec-sync: ## Sync pinned upstream specs snapshot (TAG required)
 	@test -n "$(TAG)" || (echo "ERROR: TAG is required (make spec-sync TAG=<upstream-tag>)" >&2; exit 2)
 	@if [ -n "$(SOURCE)" ]; then \
 		./scripts/sync_data_contracts_specs.sh --tag "$(TAG)" --source "$(SOURCE)"; \
@@ -28,21 +23,21 @@ spec-sync:
 		./scripts/sync_data_contracts_specs.sh --tag "$(TAG)"; \
 	fi
 
-spec-sync-check:
+spec-sync-check: ## Verify upstream lock/snapshot integrity
 	@if [ -n "$(SOURCE)" ]; then \
 		./scripts/sync_data_contracts_specs.sh --check --source "$(SOURCE)"; \
 	else \
 		./scripts/sync_data_contracts_specs.sh --check; \
 	fi
 
-compat-check:
+compat-check: ## Verify runner compatibility against pinned upstream snapshot
 	@if [ -n "$(SOURCE)" ]; then \
 		./scripts/verify_upstream_compat.sh --strict --source "$(SOURCE)"; \
 	else \
 		./scripts/verify_upstream_compat.sh --strict; \
 	fi
 
-runner-spec-sync:
+runner-spec-sync: ## Sync pinned runner-specific specs snapshot (TAG required)
 	@test -n "$(TAG)" || (echo "ERROR: TAG is required (make runner-spec-sync TAG=<upstream-tag>)" >&2; exit 2)
 	@if [ -n "$(SOURCE)" ]; then \
 		./scripts/sync_runner_specs.sh --tag "$(TAG)" --source "$(SOURCE)"; \
@@ -50,11 +45,12 @@ runner-spec-sync:
 		./scripts/sync_runner_specs.sh --tag "$(TAG)"; \
 	fi
 
-runner-spec-check:
+runner-spec-check: ## Verify runner-specific specs lock/snapshot integrity
 	@if [ -n "$(SOURCE)" ]; then \
 		./scripts/verify_runner_specs.sh --source "$(SOURCE)"; \
 	else \
 		./scripts/verify_runner_specs.sh; \
 	fi
 
-verify: lint smoke spec-sync-check compat-check runner-spec-check
+##@ Aggregate
+verify: lint smoke spec-sync-check compat-check runner-spec-check ## Run blocking local verification suite
