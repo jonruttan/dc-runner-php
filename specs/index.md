@@ -10,6 +10,7 @@ Specifications consumed by `dc-runner-php`.
 ## Local Pointers Only
 
 - `/specs/impl/php/index.md`
+- `/specs/upstream/dc-runner-spec/specs/impl/shared/makefile_help_output_v1.md`
 
 ## Lock and Manifest Artifacts
 
