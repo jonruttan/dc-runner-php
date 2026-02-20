@@ -3,8 +3,8 @@ root_contract_set: php_runner_contract_set
 runner: php
 source:
   repo: /Users/jon/Workspace/Development/dc-runner-spec
-  ref: WORKTREE
-  commit: 9cce32a74466e204661a0aebc501361b09d6e800
+  ref: main
+  commit: edbc1671427b3a72b392ee543e5b9738f3a539a1
 resolved_order:
 - php_impl_contract_set
 - shared_makefile_help_contract_set
