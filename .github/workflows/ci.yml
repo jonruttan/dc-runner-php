@@ -13,15 +13,26 @@ jobs:
       - name: Install PHP + yaml extension
         run: |
           sudo apt-get update
-          sudo apt-get install -y php-cli php-yaml
+          sudo apt-get install -y php-cli php-yaml php-xdebug composer
           php -m | grep -i ^yaml
+          php -m | grep -i xdebug
+      - name: Install Composer dependencies
+        run: ./scripts/composer.sh install --no-interaction --prefer-dist
       - name: Lint
         run: make lint
       - name: Smoke
         run: make smoke
+      - name: Unit Tests
+        run: make test
+      - name: Unit Coverage Gate
+        env:
+          XDEBUG_MODE: coverage
+        run: make test-coverage
       - name: Spec Sync Check
         run: make spec-sync-check
       - name: Compatibility Check
         run: make compat-check
       - name: Runner Spec Check
         run: make runner-spec-check
+      - name: Runner Invariants Check
+        run: make runner-invariants-check

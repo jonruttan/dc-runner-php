@@ -12,3 +12,7 @@ Local executable runner-specific specs are intentionally not maintained in this 
 Shared implementation policy specs:
 
 - `/specs/upstream/dc-runner-spec/specs/impl/shared/makefile_help_output_v1.md`
+
+Local compatibility-lane invariants:
+
+- `/specs/impl/php/runner_invariants_v1.md`

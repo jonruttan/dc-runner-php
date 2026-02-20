@@ -1,2 +1,4 @@
 .artifacts/
 dist/
+vendor/
+.phpunit.result.cache

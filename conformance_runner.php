@@ -177,6 +177,7 @@ const PHP_CAPABILITIES = [
     'assert_health.ah004',
     'assert_health.ah005',
     'requires.capabilities',
+    'ops.helper',
 ];
 const ALWAYS_TRUE_REGEX = ['.*', '^.*$', '\\A.*\\Z'];
 
@@ -414,6 +415,12 @@ function resolveContractPath(string $anchorPath, string $rawPath, string $field)
     }
     $root = contractRootFor($anchorPath);
     if (str_starts_with($raw, '/')) {
+        if (str_starts_with($raw, '/specs/')) {
+            $upstream = normalizePath($root . '/specs/upstream/data-contracts/specs/' . ltrim(substr($raw, strlen('/specs/')), '/'));
+            if (is_file($upstream) || is_dir($upstream)) {
+                return $upstream;
+            }
+        }
         $joined = $root . '/' . ltrim($raw, '/');
     } else {
         $joined = $root . '/' . $raw;
@@ -430,10 +437,19 @@ function resolveTextFilePath(string $fixturePath, array $case): string {
     if ($docAbs === '') {
         throw new RuntimeException("cannot resolve fixture path: {$fixturePath}");
     }
-    if (!array_key_exists('path', $case)) {
+    $rawPath = null;
+    if (array_key_exists('path', $case)) {
+        $rawPath = (string)$case['path'];
+    } else {
+        $checkCfg = $case['harness']['check']['config'] ?? null;
+        if (is_array($checkCfg) && !isListArray($checkCfg) && array_key_exists('path', $checkCfg)) {
+            $rawPath = (string)$checkCfg['path'];
+        }
+    }
+    if ($rawPath === null) {
         return $docAbs;
     }
-    $raw = trim((string)$case['path']);
+    $raw = trim($rawPath);
     if ($raw === '') {
         throw new SchemaError('text.file path must be non-empty');
     }
@@ -705,7 +721,313 @@ function specLangLookup(SpecLangEnv $env, string $name): mixed {
         }
         $cur = $cur->parent;
     }
+    if (str_contains($name, '.')) {
+        $parts = array_values(array_filter(explode('.', $name), static fn(string $p): bool => $p !== ''));
+        if (count($parts) > 1) {
+            $roots = [$parts[0], 'context_json', 'subject'];
+            foreach ($roots as $rootName) {
+                try {
+                    $cursor = specLangLookup($env, $rootName);
+                } catch (SchemaError) {
+                    continue;
+                }
+                $offset = $rootName === $parts[0] ? 1 : 0;
+                for ($i = $offset; $i < count($parts); $i++) {
+                    $key = $parts[$i];
+                    if (!is_array($cursor) || isListArray($cursor) || !array_key_exists($key, $cursor)) {
+                        $cursor = null;
+                        break;
+                    }
+                    $cursor = $cursor[$key];
+                }
+                if ($cursor !== null) {
+                    return $cursor;
+                }
+            }
+        }
+    }
+    $builtin = specLangBuiltinLookup($name);
+    if ($builtin !== null) {
+        return $builtin;
+    }
     throw new SchemaError("undefined variable: {$name}");
+}
+
+function specLangBuiltinLookup(string $name): ?array {
+    $known = [
+        'conf.pass_when_text_contains',
+        'make.has_target',
+        'py.is_tuple_projection',
+        'php.is_assoc_projection',
+        'domain.http.status',
+        'domain.http.status_is',
+        'domain.http.status_is_unauthorized',
+        'domain.http.status_is_forbidden',
+        'domain.http.ok_2xx',
+        'domain.http.status_in',
+        'domain.http.header_get',
+        'domain.http.header_contains',
+        'domain.http.body_text',
+        'domain.http.body_json',
+        'domain.http.body_json_type_is',
+        'domain.http.body_json_has_key',
+        'domain.http.auth_is_oauth',
+        'domain.http.has_bearer_header',
+        'domain.http.oauth_scope_requested',
+        'domain.http.oauth_token_source_is',
+        'domain.path.normalize',
+        'domain.path.eq',
+        'domain.path.is_spec_md',
+        'domain.path.is_in_docs',
+        'domain.path.sorted',
+        'domain.fs.file_ext_eq',
+        'domain.fs.glob_all',
+        'domain.fs.glob_any_spec_files',
+        'domain.fs.glob_filter',
+        'domain.fs.is_docs_spec_file',
+        'domain.fs.json_get_text',
+        'domain.fs.json_get_or_text',
+        'domain.fs.json_has_path_text',
+        'domain.fs.json_path_eq_text',
+        'domain.fs.sort_spec_files',
+        'domain.file.is_existing_file',
+        'domain.file.is_existing_dir',
+        'domain.file.has_ext',
+        'domain.file.name',
+    ];
+    if (!in_array($name, $known, true)) {
+        return null;
+    }
+    return ['__type' => 'builtin', 'name' => $name];
+}
+
+function specLangCallBuiltin(string $name, array $args): mixed {
+    $normalizeDomainPath = static function (mixed $value): string {
+        $raw = trim((string)$value);
+        if ($raw === '') {
+            return '';
+        }
+        $normalized = specLangFsNormalizePath($raw);
+        if (str_starts_with($normalized, '/docs/spec/')) {
+            return '/specs/' . ltrim(substr($normalized, strlen('/docs/spec/')), '/');
+        }
+        return $normalized;
+    };
+    $unwrapMetaArg = static function (mixed $arg): array {
+        if (is_array($arg) && !isListArray($arg)) {
+            return $arg;
+        }
+        return [];
+    };
+    if ($name === 'conf.pass_when_text_contains') {
+        return isset($args[0], $args[1]) && is_string($args[0]) && is_string($args[1]) ? str_contains($args[0], $args[1]) : false;
+    }
+    if ($name === 'make.has_target') {
+        $content = $args[0] ?? null;
+        if (is_array($content) && !isListArray($content)) {
+            $value = $content['value'] ?? null;
+            $content = is_string($value) ? $value : null;
+        }
+        return is_string($content) && isset($args[1]) && is_string($args[1]) ? str_contains($content, $args[1] . ':') : false;
+    }
+    if ($name === 'py.is_tuple_projection') {
+        $meta = $unwrapMetaArg($args[0] ?? null)['meta'] ?? [];
+        return is_array($meta) && !isListArray($meta) && (string)($meta['native_kind'] ?? '') === 'python.tuple';
+    }
+    if ($name === 'php.is_assoc_projection') {
+        $meta = $unwrapMetaArg($args[0] ?? null)['meta'] ?? [];
+        return is_array($meta) && !isListArray($meta) && (string)($meta['php_array_kind'] ?? '') === 'assoc';
+    }
+    $ctx = $args[0] ?? [];
+    $value = is_array($ctx) && !isListArray($ctx) ? ($ctx['value'] ?? []) : [];
+    $meta = is_array($ctx) && !isListArray($ctx) ? ($ctx['meta'] ?? []) : [];
+    $oauth = is_array($ctx) && !isListArray($ctx) ? (($ctx['context']['oauth'] ?? [])) : [];
+    if ($name === 'domain.http.status') {
+        return (int)($value['status'] ?? 0);
+    }
+    if ($name === 'domain.http.status_is') {
+        return (int)($value['status'] ?? -1) === (int)($args[1] ?? -2);
+    }
+    if ($name === 'domain.http.status_is_unauthorized') {
+        return (int)($value['status'] ?? -1) === 401;
+    }
+    if ($name === 'domain.http.status_is_forbidden') {
+        return (int)($value['status'] ?? -1) === 403;
+    }
+    if ($name === 'domain.http.ok_2xx') {
+        $s = (int)($value['status'] ?? -1);
+        return $s >= 200 && $s < 300;
+    }
+    if ($name === 'domain.http.status_in') {
+        $status = (int)($value['status'] ?? -1);
+        $set = $args[1] ?? [];
+        return is_array($set) && in_array($status, $set, true);
+    }
+    if ($name === 'domain.http.header_get') {
+        $headers = is_array($value['headers'] ?? null) ? $value['headers'] : [];
+        return (string)($headers[(string)($args[1] ?? '')] ?? '');
+    }
+    if ($name === 'domain.http.header_contains') {
+        $headers = is_array($value['headers'] ?? null) ? $value['headers'] : [];
+        $h = (string)($headers[(string)($args[1] ?? '')] ?? '');
+        return str_contains($h, (string)($args[2] ?? ''));
+    }
+    if ($name === 'domain.http.body_text') {
+        return (string)($value['body_text'] ?? '');
+    }
+    if ($name === 'domain.http.body_json') {
+        return $value['body_json'] ?? null;
+    }
+    if ($name === 'domain.http.body_json_type_is') {
+        $bj = $value['body_json'] ?? null;
+        $want = (string)($args[1] ?? '');
+        $type = is_array($bj) ? (isListArray($bj) ? 'array' : 'object') : gettype($bj);
+        return $type === $want;
+    }
+    if ($name === 'domain.http.body_json_has_key') {
+        $bj = $value['body_json'] ?? null;
+        return is_array($bj) && !isListArray($bj) && array_key_exists((string)($args[1] ?? ''), $bj);
+    }
+    if ($name === 'domain.http.auth_is_oauth') {
+        return (string)($meta['auth_mode'] ?? '') === 'oauth';
+    }
+    if ($name === 'domain.http.has_bearer_header') {
+        $headers = is_array($value['headers'] ?? null) ? $value['headers'] : [];
+        return str_starts_with((string)($headers['Authorization'] ?? ''), 'Bearer ');
+    }
+    if ($name === 'domain.http.oauth_scope_requested') {
+        return trim((string)($oauth['scope_requested'] ?? '')) !== '';
+    }
+    if ($name === 'domain.http.oauth_token_source_is') {
+        return (string)($meta['oauth_token_source'] ?? '') === (string)($args[1] ?? '');
+    }
+    if ($name === 'domain.path.normalize') {
+        return $normalizeDomainPath($args[0] ?? '');
+    }
+    if ($name === 'domain.path.eq') {
+        return $normalizeDomainPath($args[0] ?? '') === $normalizeDomainPath($args[1] ?? '');
+    }
+    if ($name === 'domain.path.is_spec_md') {
+        return str_ends_with($normalizeDomainPath($args[0] ?? ''), '.spec.md');
+    }
+    if ($name === 'domain.path.is_in_docs') {
+        return str_starts_with($normalizeDomainPath($args[0] ?? ''), '/specs/');
+    }
+    if ($name === 'domain.path.sorted') {
+        $paths = $args[0] ?? [];
+        if (!is_array($paths) || !isListArray($paths)) {
+            return [];
+        }
+        $out = [];
+        foreach ($paths as $p) {
+            $out[] = $normalizeDomainPath($p);
+        }
+        sort($out, SORT_STRING);
+        return array_values($out);
+    }
+    if ($name === 'domain.fs.is_docs_spec_file') {
+        $p = $normalizeDomainPath($args[0] ?? '');
+        return str_starts_with($p, '/specs/') && str_ends_with($p, '.spec.md');
+    }
+    if ($name === 'domain.fs.sort_spec_files') {
+        $paths = $args[0] ?? [];
+        if (!is_array($paths) || !isListArray($paths)) {
+            return [];
+        }
+        $out = [];
+        foreach ($paths as $p) {
+            $np = $normalizeDomainPath($p);
+            if (str_ends_with($np, '.spec.md')) {
+                $out[] = $np;
+            }
+        }
+        sort($out, SORT_STRING);
+        return array_values($out);
+    }
+    if ($name === 'domain.fs.glob_any_spec_files') {
+        $paths = $args[0] ?? [];
+        if (!is_array($paths) || !isListArray($paths)) {
+            return false;
+        }
+        foreach ($paths as $p) {
+            if (str_ends_with($normalizeDomainPath($p), '.spec.md')) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if ($name === 'domain.fs.glob_filter') {
+        $paths = $args[0] ?? [];
+        $pattern = (string)($args[1] ?? '');
+        if (!is_array($paths) || !isListArray($paths)) {
+            return [];
+        }
+        $out = [];
+        foreach ($paths as $p) {
+            $np = $normalizeDomainPath($p);
+            if (fnmatch($pattern, specLangFsBasename($np))) {
+                $out[] = $np;
+            }
+        }
+        return array_values($out);
+    }
+    if ($name === 'domain.fs.glob_all') {
+        $paths = $args[0] ?? [];
+        $pattern = (string)($args[1] ?? '');
+        if (!is_array($paths) || !isListArray($paths) || count($paths) === 0) {
+            return false;
+        }
+        foreach ($paths as $p) {
+            if (!fnmatch($pattern, specLangFsBasename($normalizeDomainPath($p)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    if ($name === 'domain.fs.json_get_text' || $name === 'domain.fs.json_get_or_text' || $name === 'domain.fs.json_has_path_text' || $name === 'domain.fs.json_path_eq_text') {
+        $raw = (string)($args[0] ?? '');
+        $path = $args[1] ?? [];
+        if (!is_array($path) || !isListArray($path)) {
+            return $name === 'domain.fs.json_get_or_text' ? ($args[2] ?? null) : false;
+        }
+        try {
+            $obj = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return $name === 'domain.fs.json_get_or_text' ? ($args[2] ?? null) : false;
+        }
+        [$ok, $got] = specLangGetInPath($obj, $path);
+        if ($name === 'domain.fs.json_get_text') {
+            return $ok ? $got : null;
+        }
+        if ($name === 'domain.fs.json_get_or_text') {
+            return $ok ? $got : ($args[2] ?? null);
+        }
+        if ($name === 'domain.fs.json_has_path_text') {
+            return $ok;
+        }
+        return $ok && $got === ($args[2] ?? null);
+    }
+    if ($name === 'domain.fs.file_ext_eq') {
+        $meta = $unwrapMetaArg($args[0] ?? null);
+        return specLangFsExtname((string)($meta['path'] ?? '')) === specLangFsNormalizeExt((string)($args[1] ?? ''));
+    }
+    if ($name === 'domain.file.is_existing_file') {
+        $meta = $unwrapMetaArg($args[0] ?? null);
+        return (bool)($meta['exists'] ?? false) && (string)($meta['type'] ?? '') === 'file';
+    }
+    if ($name === 'domain.file.is_existing_dir') {
+        $meta = $unwrapMetaArg($args[0] ?? null);
+        return (bool)($meta['exists'] ?? false) && (string)($meta['type'] ?? '') === 'dir';
+    }
+    if ($name === 'domain.file.has_ext') {
+        $meta = $unwrapMetaArg($args[0] ?? null);
+        return specLangFsExtname((string)($meta['path'] ?? '')) === specLangFsNormalizeExt((string)($args[1] ?? ''));
+    }
+    if ($name === 'domain.file.name') {
+        $meta = $unwrapMetaArg($args[0] ?? null);
+        return specLangFsBasename((string)($meta['path'] ?? ''));
+    }
+    throw new SchemaError("unsupported builtin symbol: {$name}");
 }
 
 function specLangJsonTypeName(mixed $value): string {
@@ -1691,6 +2013,13 @@ function specLangEvalTail(mixed $expr, SpecLangEnv $env, mixed $subject, array $
             foreach (array_slice($args, 1) as $arg) {
                 $evalArgs[] = specLangEvalNonTail($arg, $currentEnv, $subject, $limits, $state);
             }
+            if (is_array($fnValue) && ($fnValue['__type'] ?? null) === 'builtin') {
+                $name = (string)($fnValue['name'] ?? '');
+                if ($name === '') {
+                    throw new SchemaError('spec_lang builtin symbol missing name');
+                }
+                return specLangCallBuiltin($name, $evalArgs);
+            }
             if (!specLangIsClosure($fnValue)) {
                 throw new SchemaError('spec_lang call expects fn closure');
             }
@@ -1729,7 +2058,17 @@ function specLangEvalPredicate(
     }
     $root['subject'] = $subject;
     $value = specLangEvalTail($expr, new SpecLangEnv($root, null), $subject, $limits, $state);
-    return (bool)$value;
+    if (!is_bool($value) && is_array($expr) && isListArray($expr) && (($expr[0] ?? null) === 'lit') && count($expr) === 2) {
+        $litBody = $expr[1];
+        if (is_array($litBody) && !isListArray($litBody) && count($litBody) === 1) {
+            $compiled = compileYamlExprToSexpr($litBody, 'evaluate.lit');
+            $value = specLangEvalTail($compiled, new SpecLangEnv($root, null), $subject, $limits, $state);
+        }
+    }
+    if (!is_bool($value)) {
+        throw new SchemaError('evaluate expression must produce boolean');
+    }
+    return $value;
 }
 
 function compileYamlExprLiteral(mixed $value, string $fieldPath): mixed {
@@ -2039,18 +2378,54 @@ function loadSpecLangSymbolsForCase(string $fixturePath, array $case, array $lim
         throw new SchemaError('harness.spec_lang must be a mapping');
     }
     $libPaths = asNonEmptyStringList($cfg['includes'] ?? null, 'harness.spec_lang.includes');
-    if (count($libPaths) > 0) {
-        throw new SchemaError(
-            'harness.spec_lang.includes is not supported for executable cases; use harness.chain imports'
-        );
-    }
     $consumerExports = asNonEmptyStringList($cfg['exports'] ?? null, 'harness.spec_lang.exports');
-    if (count($consumerExports) > 0) {
-        throw new SchemaError(
-            'harness.spec_lang.exports is not supported for executable cases; use harness.chain imports'
-        );
+    $symbols = [];
+    if (count($libPaths) > 0) {
+        $entryDocs = [];
+        foreach ($libPaths as $relPath) {
+            $entryDocs[] = resolveLibraryPath($fixturePath, $relPath);
+        }
+        $symbols = loadSpecLangSymbolsFromEntryDocs($entryDocs, $limits);
+        if (count($consumerExports) > 0) {
+            $filtered = [];
+            foreach ($consumerExports as $name) {
+                if (array_key_exists($name, $symbols)) {
+                    $filtered[$name] = $symbols[$name];
+                }
+            }
+            $symbols = $filtered;
+        }
     }
-    return [];
+
+    $uses = $harness['use'] ?? [];
+    if (is_array($uses) && isListArray($uses)) {
+        foreach ($uses as $idx => $useEntry) {
+            if (!is_array($useEntry) || isListArray($useEntry)) {
+                throw new SchemaError("harness.use[{$idx}] must be a mapping");
+            }
+            $ref = trim((string)($useEntry['ref'] ?? ''));
+            if ($ref === '') {
+                throw new SchemaError("harness.use[{$idx}].ref is required");
+            }
+            $doc = resolveLibraryPath($fixturePath, $ref);
+            $docSymbols = loadSpecLangSymbolsFromEntryDocs([$doc], $limits);
+            $names = $useEntry['symbols'] ?? [];
+            if (is_array($names) && isListArray($names) && count($names) > 0) {
+                foreach ($names as $rawName) {
+                    $name = trim((string)$rawName);
+                    if ($name !== '' && array_key_exists($name, $docSymbols)) {
+                        $symbols[$name] = $docSymbols[$name];
+                    }
+                }
+            } else {
+                foreach ($docSymbols as $name => $fn) {
+                    $symbols[(string)$name] = $fn;
+                }
+            }
+        }
+    }
+
+    return $symbols;
 }
 
 function chainRefResolveDocPath(string $fixturePath, string $rawRef): array {
@@ -2281,7 +2656,19 @@ function assertLeafPredicate(
     array $specLangSymbols = [],
     array $specLangImports = []
 ): void {
-    if (!specLangEvalPredicate($expr, $subject, $specLangLimits, $specLangSymbols, $specLangImports)) {
+    $runtimeSymbols = $specLangSymbols;
+    if (is_string($subject)) {
+        $runtimeSymbols['text'] = $runtimeSymbols['text'] ?? $subject;
+    }
+    if ($target === 'status') {
+        $runtimeSymbols['status'] = $runtimeSymbols['status'] ?? $subject;
+        $runtimeSymbols['text'] = $runtimeSymbols['text'] ?? (string)$subject;
+    }
+    if (in_array($target, ['body_json', 'cors_json', 'steps_json', 'context_json'], true)) {
+        $runtimeSymbols[(string)$target] = $runtimeSymbols[(string)$target] ?? $subject;
+        $runtimeSymbols['context_json'] = $runtimeSymbols['context_json'] ?? $subject;
+    }
+    if (!specLangEvalPredicate($expr, $subject, $specLangLimits, $runtimeSymbols, $specLangImports)) {
         $msg = $op === 'evaluate' ? 'evaluate assertion failed' : "{$op} assertion failed";
         throw new AssertionFailure(
             "[case_id={$caseId} contract_path={$path} target={$target} op={$op}] {$msg}"
@@ -2297,10 +2684,18 @@ function evalTextLeaf(
     string $path,
     array $specLangLimits,
     array $specLangSymbols,
-    array $specLangImports
+    array $specLangImports,
+    ?array $contextJson = null
 ): void {
     $expr = compileAssertionLeafExpr($leaf, $path);
-    assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $subject, $specLangLimits, $specLangSymbols, $specLangImports);
+    $runtimeSymbols = $specLangSymbols;
+    if (is_string($subject)) {
+        $runtimeSymbols['text'] = $runtimeSymbols['text'] ?? $subject;
+    }
+    if ($contextJson !== null) {
+        $runtimeSymbols['context_json'] = $runtimeSymbols['context_json'] ?? $contextJson;
+    }
+    assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $subject, $specLangLimits, $runtimeSymbols, $specLangImports);
 }
 
 function evalTextAssertNode(
@@ -2525,7 +2920,7 @@ function evalTextAssertNode(
         throw new SchemaError('leaf assertion must not include key: target; move target to a parent group');
     }
     if ($target === null || $target === '') {
-        throw new SchemaError('assertion leaf requires inherited target from a parent group');
+        $target = 'text';
     }
     if ($target !== 'text' && $target !== 'context_json') {
         throw new SchemaError('unknown assert target for text.file');
@@ -2538,7 +2933,8 @@ function evalTextAssertNode(
         $path,
         $specLangLimits,
         $specLangSymbols,
-        $specLangImports
+        $specLangImports,
+        $contextJson
     );
 }
 
@@ -2548,7 +2944,7 @@ function evaluateTextFileCase(string $fixturePath, array $case, string $subject)
     } catch (SchemaError $e) {
         return ['status' => 'fail', 'category' => 'schema', 'message' => $e->getMessage()];
     }
-    $diags = lintAssertionHealth($case['contract'] ?? []);
+    $diags = lintAssertionHealth(normalizeContractAssertions($case['contract'] ?? []));
     if (count($diags) > 0 && $resolvedMode === 'error') {
         return [
             'status' => 'fail',
@@ -2563,7 +2959,7 @@ function evaluateTextFileCase(string $fixturePath, array $case, string $subject)
     }
 
     try {
-        $assertSpec = $case['contract'] ?? [];
+        $assertSpec = normalizeContractAssertions($case['contract'] ?? []);
         $specLangLimits = specLangLimitsFromCase($case);
         $specLangImports = specLangCompileImportsForCase($case);
         $specLangSymbols = loadSpecLangSymbolsForCase($fixturePath, $case, $specLangLimits);
@@ -2626,6 +3022,15 @@ function resolveApiHttpUrl(string $fixturePath, string $url): array {
         throw new RuntimeException("cannot resolve fixture path: {$fixturePath}");
     }
     if (str_starts_with($trim, '/')) {
+        if (str_starts_with($trim, '/specs/')) {
+            $docAbs = (string)realpath($fixturePath);
+            if ($docAbs !== '' && preg_match('#^(.*?/specs/upstream/data-contracts/specs)(/.*)?$#', $docAbs, $m) === 1) {
+                $candidate = normalizePath($m[1] . substr($trim, strlen('/specs')));
+                if (is_file($candidate)) {
+                    return ['source_type' => 'file', 'path' => $candidate];
+                }
+            }
+        }
         $candidate = resolveContractPath($docAbs, $trim, 'api.http request.url');
         return ['source_type' => 'file', 'path' => $candidate];
     }
@@ -2925,31 +3330,40 @@ function evalApiHttpLeaf(
     array $specLangImports
 ): void {
     $expr = compileAssertionLeafExpr($leaf, $path);
+    $runtimeSymbols = $specLangSymbols;
+    $runtimeSymbols['status'] = (string)($resp['status'] ?? '');
+    $runtimeSymbols['body_text'] = (string)($resp['body_text'] ?? '');
+    $runtimeSymbols['headers'] = (string)($resp['headers_text'] ?? '');
+    $runtimeSymbols['body_json'] = $resp['body_json'] ?? null;
+    $runtimeSymbols['cors_json'] = $resp['cors_json'] ?? null;
+    $runtimeSymbols['steps_json'] = $resp['steps_json'] ?? [];
+    $runtimeSymbols['context_json'] = $resp['context_json'] ?? null;
+    $runtimeSymbols['text'] = (string)($resp['body_text'] ?? '');
     if ($target === 'status' || $target === 'headers' || $target === 'body_text') {
         $subject = $target === 'status'
             ? (string)$resp['status']
             : ($target === 'headers' ? (string)$resp['headers_text'] : (string)$resp['body_text']);
-        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $subject, $specLangLimits, $specLangSymbols, $specLangImports);
+        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $subject, $specLangLimits, $runtimeSymbols, $specLangImports);
         return;
     }
     if ($target === 'body_json') {
         $parsed = $resp['body_json'] ?? null;
-        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $parsed, $specLangLimits, $specLangSymbols, $specLangImports);
+        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $parsed, $specLangLimits, $runtimeSymbols, $specLangImports);
         return;
     }
     if ($target === 'cors_json') {
         $cors = $resp['cors_json'] ?? null;
-        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $cors, $specLangLimits, $specLangSymbols, $specLangImports);
+        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $cors, $specLangLimits, $runtimeSymbols, $specLangImports);
         return;
     }
     if ($target === 'steps_json') {
         $steps = $resp['steps_json'] ?? [];
-        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $steps, $specLangLimits, $specLangSymbols, $specLangImports);
+        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $steps, $specLangLimits, $runtimeSymbols, $specLangImports);
         return;
     }
     if ($target === 'context_json') {
         $context = $resp['context_json'] ?? null;
-        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $context, $specLangLimits, $specLangSymbols, $specLangImports);
+        assertLeafPredicate($caseId, $path, $target, 'evaluate', $expr, $context, $specLangLimits, $runtimeSymbols, $specLangImports);
         return;
     }
     throw new SchemaError("unknown assert target for api.http: {$target}");
@@ -3160,7 +3574,7 @@ function evalApiHttpAssertNode(
         throw new SchemaError('leaf assertion must not include key: target; move target to a parent group');
     }
     if ($target === null || $target === '') {
-        throw new SchemaError('assertion leaf requires inherited target from a parent group');
+        $target = 'body_text';
     }
     evalApiHttpLeaf(
         $node,
@@ -3177,6 +3591,13 @@ function evalApiHttpAssertNode(
 function evaluateApiHttpCase(string $fixturePath, array $case): array {
     $request = $case['request'] ?? null;
     $requests = $case['requests'] ?? null;
+    if ($request === null && $requests === null) {
+        $checkCfg = $case['harness']['check']['config'] ?? null;
+        if (is_array($checkCfg) && !isListArray($checkCfg)) {
+            $request = $checkCfg['request'] ?? null;
+            $requests = $checkCfg['requests'] ?? null;
+        }
+    }
     if ($request !== null && $requests !== null) {
         throw new SchemaError('api.http request and requests are mutually exclusive');
     }
@@ -3414,7 +3835,7 @@ function evaluateApiHttpCase(string $fixturePath, array $case): array {
     }
 
     $mode = resolveAssertHealthMode($case);
-    $diags = lintAssertionHealth($case['contract'] ?? []);
+    $diags = lintAssertionHealth(normalizeContractAssertions($case['contract'] ?? []));
     if (count($diags) > 0 && $mode === 'error') {
         return [
             'status' => 'fail',
@@ -3428,7 +3849,7 @@ function evaluateApiHttpCase(string $fixturePath, array $case): array {
         }
     }
 
-    $assertSpec = $case['contract'] ?? [];
+    $assertSpec = normalizeContractAssertions($case['contract'] ?? []);
     $specLangLimits = specLangLimitsFromCase($case);
     $specLangImports = specLangCompileImportsForCase($case);
     $specLangSymbols = loadSpecLangSymbolsForCase($fixturePath, $case, $specLangLimits);
@@ -3508,25 +3929,41 @@ function evaluateApiHttpCase(string $fixturePath, array $case): array {
 }
 
 function evaluateRequires(array $case): ?array {
-    if (!array_key_exists('requires', $case)) {
-        return null;
-    }
-    $requires = $case['requires'];
-    if (!is_array($requires)) {
-        return ['status' => 'fail', 'category' => 'schema', 'message' => 'requires must be a mapping when provided'];
-    }
-    $caps = $requires['capabilities'] ?? [];
-    if (!is_array($caps) || !isListArray($caps)) {
-        return ['status' => 'fail', 'category' => 'schema', 'message' => 'requires.capabilities must be a list'];
-    }
     $needed = [];
-    foreach ($caps as $c) {
-        $s = trim((string)$c);
-        if ($s !== '') {
-            $needed[] = $s;
+    $whenMissing = 'fail';
+
+    if (array_key_exists('requires', $case)) {
+        $requires = $case['requires'];
+        if (!is_array($requires)) {
+            return ['status' => 'fail', 'category' => 'schema', 'message' => 'requires must be a mapping when provided'];
+        }
+        $caps = $requires['capabilities'] ?? [];
+        if (!is_array($caps) || !isListArray($caps)) {
+            return ['status' => 'fail', 'category' => 'schema', 'message' => 'requires.capabilities must be a list'];
+        }
+        foreach ($caps as $c) {
+            $s = trim((string)$c);
+            if ($s !== '') {
+                $needed[] = $s;
+            }
+        }
+        $whenMissing = strtolower(trim((string)($requires['when_missing'] ?? 'fail')));
+    }
+
+    $specLangCaps = $case['harness']['spec_lang']['capabilities'] ?? null;
+    if (is_array($specLangCaps) && isListArray($specLangCaps)) {
+        foreach ($specLangCaps as $c) {
+            $s = trim((string)$c);
+            if ($s !== '') {
+                $needed[] = $s;
+            }
         }
     }
-    $whenMissing = strtolower(trim((string)($requires['when_missing'] ?? 'fail')));
+
+    if (count($needed) === 0) {
+        return null;
+    }
+
     if ($whenMissing === '') {
         $whenMissing = 'fail';
     }
@@ -3552,6 +3989,77 @@ function evaluateRequires(array $case): ?array {
         'category' => 'runtime',
         'message' => "missing required capabilities for implementation 'php': " . implode(', ', $missing),
     ];
+}
+
+function applyPortableExpectation(array $case, array $actual): array {
+    $portable = $case['expect']['portable'] ?? null;
+    if (!is_array($portable) || isListArray($portable)) {
+        return $actual;
+    }
+    $expectedStatus = trim((string)($portable['status'] ?? ''));
+    if ($expectedStatus === '') {
+        return $actual;
+    }
+    $expectedCategoryRaw = $portable['category'] ?? null;
+    $expectedCategory = $expectedCategoryRaw === null ? null : trim((string)$expectedCategoryRaw);
+    $actualStatus = trim((string)($actual['status'] ?? ''));
+    $actualCategoryRaw = $actual['category'] ?? null;
+    $actualCategory = $actualCategoryRaw === null ? null : trim((string)$actualCategoryRaw);
+    if ($expectedStatus === $actualStatus && $expectedCategory === $actualCategory) {
+        return ['status' => 'pass', 'category' => null, 'message' => null];
+    }
+    return [
+        'status' => 'fail',
+        'category' => 'assertion',
+        'message' => "portable expectation mismatch: expected {$expectedStatus}/" . ($expectedCategory ?? 'null')
+            . ", got {$actualStatus}/" . ($actualCategory ?? 'null')
+            . " (" . (string)($actual['message'] ?? '') . ")",
+    ];
+}
+
+function normalizeContractAssertions(mixed $contract): mixed {
+    if (!is_array($contract) || isListArray($contract)) {
+        return $contract;
+    }
+    $steps = $contract['steps'] ?? null;
+    if (!is_array($steps) || !isListArray($steps)) {
+        return $contract;
+    }
+    $normalized = [];
+    foreach ($steps as $idx => $step) {
+        if (!is_array($step) || isListArray($step)) {
+            throw new SchemaError("contract.steps[{$idx}] must be a mapping");
+        }
+        $stepId = trim((string)($step['id'] ?? ''));
+        if ($stepId === '') {
+            throw new SchemaError("contract.steps[{$idx}].id must be non-empty");
+        }
+        $rawClass = strtolower(trim((string)($step['class'] ?? 'must')));
+        $stepClass = match ($rawClass) {
+            'must', '' => 'must',
+            'may', 'can' => 'can',
+            'must_not', 'cannot' => 'cannot',
+            default => throw new SchemaError("contract.steps[{$idx}].class unsupported: {$rawClass}"),
+        };
+        if (!array_key_exists('assert', $step)) {
+            throw new SchemaError("contract.steps[{$idx}].assert is required");
+        }
+        $rawAssert = $step['assert'];
+        $asserts = (is_array($rawAssert) && isListArray($rawAssert)) ? $rawAssert : [$rawAssert];
+        if (count($asserts) === 0) {
+            throw new SchemaError("contract.steps[{$idx}].assert must be non-empty");
+        }
+        $entry = [
+            'id' => $stepId,
+            'class' => $stepClass,
+            'asserts' => $asserts,
+        ];
+        if (array_key_exists('target', $step)) {
+            $entry['target'] = (string)$step['target'];
+        }
+        $normalized[] = $entry;
+    }
+    return ['must' => $normalized];
 }
 
 function evaluateCase(string $fixturePath, mixed $case): array {
@@ -3584,7 +4092,20 @@ function evaluateCase(string $fixturePath, mixed $case): array {
         ];
     }
 
-    if ($type === 'text.file') {
+    $effectiveType = $type;
+    if ($type === 'contract.check' || $type === 'contract.job') {
+        $profile = $case['harness']['check']['profile'] ?? null;
+        if (!is_string($profile) || trim($profile) === '') {
+            $profile = $case['harness']['profile'] ?? null;
+        }
+        if (is_string($profile) && trim($profile) !== '') {
+            $effectiveType = trim($profile);
+        } elseif ($type === 'contract.job') {
+            $effectiveType = 'contract.job';
+        }
+    }
+
+    if ($effectiveType === 'text.file') {
         try {
             $subjectPath = resolveTextFilePath($fixturePath, $case);
         } catch (SchemaError $e) {
@@ -3596,7 +4117,7 @@ function evaluateCase(string $fixturePath, mixed $case): array {
             ];
         }
 
-        $subject = file_get_contents($subjectPath);
+        $subject = is_file($subjectPath) ? file_get_contents($subjectPath) : false;
         if ($subject === false) {
             return [
                 'id' => $id,
@@ -3607,29 +4128,36 @@ function evaluateCase(string $fixturePath, mixed $case): array {
         }
         $case['__target_path'] = $subjectPath;
         $res = evaluateTextFileCase($fixturePath, $case, $subject);
-    } elseif ($type === 'api.http') {
+    } elseif ($effectiveType === 'api.http') {
         try {
             $res = evaluateApiHttpCase($fixturePath, $case);
         } catch (SchemaError $e) {
-            return ['id' => $id, 'status' => 'fail', 'category' => 'schema', 'message' => $e->getMessage()];
+            $res = ['status' => 'fail', 'category' => 'schema', 'message' => $e->getMessage()];
         } catch (AssertionFailure $e) {
-            return ['id' => $id, 'status' => 'fail', 'category' => 'assertion', 'message' => $e->getMessage()];
+            $res = ['status' => 'fail', 'category' => 'assertion', 'message' => $e->getMessage()];
         } catch (Throwable $e) {
-            return ['id' => $id, 'status' => 'fail', 'category' => 'runtime', 'message' => $e->getMessage()];
+            $res = ['status' => 'fail', 'category' => 'runtime', 'message' => $e->getMessage()];
         }
+    } elseif ($effectiveType === 'contract.job') {
+        $res = ['status' => 'skip', 'category' => null, 'message' => null];
     } else {
-        return [
-            'id' => $id,
+        $res = [
             'status' => 'fail',
             'category' => 'runtime',
             'message' => "unsupported type for php bootstrap: {$type}",
         ];
     }
-    return [
-        'id' => $id,
+    $actual = [
         'status' => $res['status'],
         'category' => $res['category'],
         'message' => $res['message'],
+    ];
+    $normalized = applyPortableExpectation($case, $actual);
+    return [
+        'id' => $id,
+        'status' => $normalized['status'],
+        'category' => $normalized['category'],
+        'message' => $normalized['message'],
     ];
 }
 

@@ -1,0 +1,28 @@
+<?php
+declare(strict_types=1);
+
+namespace DcRunnerPhp\Tests\Unit;
+
+use DcRunnerPhp\Core\CaseSchemaValidator;
+use PHPUnit\Framework\TestCase;
+
+final class CaseSchemaValidatorTest extends TestCase {
+    public function testRejectsMissingRequiredKeys(): void {
+        $validator = new CaseSchemaValidator();
+        $this->expectException(\RuntimeException::class);
+        $validator->validate(['id' => 'x']);
+    }
+
+    public function testAcceptsMinimalCaseShape(): void {
+        $validator = new CaseSchemaValidator();
+        $validator->validate([
+            'id' => 'x',
+            'spec_version' => 1,
+            'schema_ref' => '/specs/schema/schema_v1.md',
+            'type' => 'contract.check',
+            'harness' => ['check' => ['profile' => 'text.file', 'config' => []]],
+            'contract' => ['defaults' => ['class' => 'MUST'], 'steps' => []],
+        ]);
+        self::assertTrue(true);
+    }
+}

@@ -1,4 +1,4 @@
-.PHONY: help lint smoke spec-sync spec-sync-check compat-check runner-spec-sync runner-spec-check verify
+.PHONY: help lint smoke test test-coverage spec-sync spec-sync-check compat-check runner-spec-sync runner-spec-check runner-invariants-check verify
 .DEFAULT_GOAL := help
 SOURCE ?=
 
@@ -13,6 +13,15 @@ lint: ## Run php syntax checks
 smoke: ## Run help output for both entrypoints
 	./runner_adapter.sh conformance --help
 	./runner_adapter.sh spec-runner --help
+
+test: ## Run PHPUnit unit/integration tests (requires composer install)
+	@test -f vendor/autoload.php || ./scripts/composer.sh install --no-interaction --prefer-dist
+	./vendor/bin/phpunit --configuration phpunit.xml
+
+test-coverage: ## Run PHPUnit with text coverage report
+	@test -f vendor/autoload.php || ./scripts/composer.sh install --no-interaction --prefer-dist
+	bash scripts/run_phpunit_coverage.sh
+	php scripts/check_critical_coverage.php .artifacts/coverage/clover.xml
 
 ##@ Specs
 spec-sync: ## Sync pinned upstream specs snapshot (TAG required)
@@ -52,5 +61,8 @@ runner-spec-check: ## Verify runner-specific specs lock/snapshot integrity
 		./scripts/verify_runner_specs.sh; \
 	fi
 
+runner-invariants-check: ## Verify local runner invariants from specs/impl/php
+	./scripts/verify_runner_invariants.sh
+
 ##@ Aggregate
-verify: lint smoke spec-sync-check compat-check runner-spec-check ## Run blocking local verification suite
+verify: lint smoke test spec-sync-check compat-check runner-spec-check runner-invariants-check ## Run blocking local verification suite

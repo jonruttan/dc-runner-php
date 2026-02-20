@@ -5,10 +5,10 @@ subcommand="${1:-}"
 shift || true
 case "$subcommand" in
   conformance)
-    exec php "$ROOT_DIR/conformance_runner.php" "$@"
+    exec php "$ROOT_DIR/bin/spec-runner" conformance "$@"
     ;;
   spec-runner)
-    exec php "$ROOT_DIR/spec_runner.php" "$@"
+    exec php "$ROOT_DIR/bin/spec-runner" spec-runner "$@"
     ;;
   *)
     echo "ERROR: unsupported subcommand: $subcommand" >&2

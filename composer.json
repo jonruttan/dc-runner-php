@@ -1,0 +1,27 @@
+{
+  "name": "jonruttan/dc-runner-php",
+  "description": "PHP-native spec runner for Data Contracts",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-yaml": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "DcRunnerPhp\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "DcRunnerPhp\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --configuration phpunit.xml",
+    "test-coverage": "bash scripts/run_phpunit_coverage.sh && php scripts/check_critical_coverage.php .artifacts/coverage/clover.xml"
+  }
+}
