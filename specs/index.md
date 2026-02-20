@@ -15,5 +15,6 @@ Specifications consumed by `dc-runner-php`.
 
 - `/specs/upstream/data_contracts_lock_v1.yaml`
 - `/specs/upstream/data-contracts.manifest.sha256`
-- `/specs/upstream/dc_runner_spec_lock_v1.yaml`
+- `/specs/upstream/resolved_contract_set_lock_v1.yaml`
+- `/specs/upstream/resolved_contract_set_lock_v1.sha256`
 - `/specs/upstream/dc-runner-spec.manifest.sha256`

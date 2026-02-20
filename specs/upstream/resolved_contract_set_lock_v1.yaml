@@ -1,0 +1,15 @@
+version: 1
+root_contract_set: php_runner_contract_set
+runner: php
+source:
+  repo: /Users/jon/Workspace/Development/dc-runner-spec
+  ref: WORKTREE
+  commit: 3f45447936d073e1fb164519e99ecdd78f1a3874
+resolved_order:
+- php_impl_contract_set
+- shared_makefile_help_contract_set
+- php_runner_contract_set
+integrity:
+  file_count: 17
+  sha256_manifest: 55b7b70e41eefdd6c8dba8d9294a82bc5c4afffc02d31020ff7ab3bed7ab5509
+  sha256_manifests: 63c028b389c24ac1920b48011f77d076ae65b500764566a2e1bf6c989c138ad7
