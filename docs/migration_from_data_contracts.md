@@ -6,6 +6,9 @@ Former locations in `data-contracts`:
 - `docs/impl/php.md`
 - `specs/impl/**` implementation narratives
 
-Canonical implementation ownership now lives in this repository under:
-- `specs/impl/php/`
-- `README.md`
+Canonical runner-specific spec ownership now lives in:
+- `dc-runner-spec/specs/impl/php/`
+
+This repository consumes that canonical source via:
+- `/specs/upstream/dc-runner-spec/specs/impl/php/`
+- `/specs/impl/php/index.md` (local pointer)

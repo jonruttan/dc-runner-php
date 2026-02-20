@@ -16,15 +16,20 @@ Local runner-owned artifacts:
 - `/runner_adapter.sh`
 - `/conformance_runner.php`
 - `/spec_runner.php`
-- `/specs/impl/php/**`
+- `/specs/impl/php/index.md` (pointer only)
 - `/scripts/sync_data_contracts_specs.sh`
 - `/scripts/verify_upstream_compat.sh`
+- `/scripts/sync_runner_specs.sh`
+- `/scripts/verify_runner_specs.sh`
 
 Pinned upstream compatibility artifacts:
 
 - `/specs/upstream/data_contracts_lock_v1.yaml`
 - `/specs/upstream/data-contracts.manifest.sha256`
 - `/specs/upstream/data-contracts/**`
+- `/specs/upstream/dc_runner_spec_lock_v1.yaml`
+- `/specs/upstream/dc-runner-spec.manifest.sha256`
+- `/specs/upstream/dc-runner-spec/specs/impl/php/**`
 
 ## Execution Model
 

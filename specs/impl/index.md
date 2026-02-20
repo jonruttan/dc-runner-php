@@ -1,3 +1,3 @@
 # Implementation Index
 
-- `/specs/impl/php/`
+- `/specs/impl/php/index.md`
