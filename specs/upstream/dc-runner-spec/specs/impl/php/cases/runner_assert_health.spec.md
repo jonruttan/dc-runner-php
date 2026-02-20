@@ -9,6 +9,13 @@ purpose: Verifies assert_health warn mode on cli.run preserves pass outcome whil
   warnings.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -32,11 +39,10 @@ contract:
   steps:
   - id: assert_1
     assert:
-    - std.string.contains:
+    - call:
+      - {var: policy.text.contains_pair}
       - {var: stdout}
       - ok
-    - std.string.contains:
-      - {var: stdout}
       - ok
 ```
 
@@ -49,6 +55,13 @@ purpose: Verifies assert_health error mode on cli.run converts assertion-health 
   assertion failures.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -74,11 +87,10 @@ contract:
   steps:
   - id: assert_1
     assert:
-    - std.string.contains:
+    - call:
+      - {var: policy.text.contains_pair}
       - {var: stdout}
       - ok
-    - std.string.contains:
-      - {var: stdout}
       - ok
 ```
 
@@ -90,6 +102,13 @@ title: invalid assert_health mode is schema failure
 purpose: Verifies invalid assert_health mode values are rejected as schema errors.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -129,6 +148,13 @@ purpose: Verifies SPEC_RUNNER_ASSERT_HEALTH controls diagnostics when assert_hea
   not set in a case.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -150,11 +176,10 @@ contract:
   steps:
   - id: assert_1
     assert:
-    - std.string.contains:
+    - call:
+      - {var: policy.text.contains_pair}
       - {var: stdout}
       - ok
-    - std.string.contains:
-      - {var: stdout}
       - ok
 ```
 
@@ -167,6 +192,13 @@ purpose: Verifies assert_health.mode ignore suppresses diagnostics even when glo
   is warn.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -190,10 +222,9 @@ contract:
   steps:
   - id: assert_1
     assert:
-    - std.string.contains:
+    - call:
+      - {var: policy.text.contains_pair}
       - {var: stdout}
       - ok
-    - std.string.contains:
-      - {var: stdout}
       - ok
 ```
