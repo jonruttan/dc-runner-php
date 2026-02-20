@@ -8,6 +8,13 @@ title: shell command via sh -c works when shell exists
 purpose: Captures a shell-based cli.run case to detect environments where sh is unavailable.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/sh -c
   check:
     profile: cli.run
@@ -42,6 +49,13 @@ title: process env passthrough remains stringly typed
 purpose: Verifies env values passed through cli.run are observed as strings by child processes.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/sh -c
   env:
     X_PORT_BOOL: 'true'
@@ -79,6 +93,13 @@ title: relative stdout path resolves from runner cwd
 purpose: Detects portability differences in cwd/path handling for stdout_path assertions.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run

@@ -25,6 +25,13 @@ contract:
       - {var: text}
       - '# PHP Spec Runner Pass Cases'
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config: {}
@@ -55,6 +62,13 @@ contract:
       - {var: text}
       - fixture-content
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config:
@@ -83,13 +97,19 @@ contract:
   - id: assert_1
     class: MAY
     assert:
-    - std.string.contains:
+    - call:
+      - {var: policy.text.contains_pair}
       - {var: text}
       - no-match-token
-    - std.string.contains:
-      - {var: text}
       - fixture-content
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config:
@@ -104,6 +124,13 @@ title: cli.run explicit entrypoint executes argv
 purpose: Verifies cli.run executes explicit harness entrypoint with argv arguments.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -138,6 +165,13 @@ title: cli.run applies harness env mapping
 purpose: Verifies cli.run applies harness env values to the subprocess environment.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/sh -c
   env:
     X_PHP_SPEC: 'on'
@@ -174,6 +208,13 @@ title: cli.run requires explicit harness entrypoint
 purpose: Verifies cli.run executes when harness entrypoint is explicitly provided.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -208,6 +249,13 @@ title: cli.run json_type list assertion passes
 purpose: Verifies json parsing and type checks can be expressed via std.* mapping-AST.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -243,6 +291,13 @@ title: cli.run can assert stderr output
 purpose: Verifies stderr target assertions using a command that writes to stderr.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/sh -c
   check:
     profile: cli.run
@@ -277,6 +332,13 @@ title: cli.run supports stdout_path and stdout_path_text targets
 purpose: Verifies path-based assertions for stdout_path existence and stdout_path_text content.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run

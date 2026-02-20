@@ -2,15 +2,15 @@ version: 1
 root_contract_set: php_runner_contract_set
 runner: php
 source:
-  repo: /Users/jon/Workspace/Development/dc-runner-spec
+  repo: git@github.com:jonruttan/dc-runner-spec.git
   ref: main
-  commit: edbc1671427b3a72b392ee543e5b9738f3a539a1
+  commit: 1f2393c2085c26cb69542134eadfb43b910306cd
 resolved_order:
 - php_impl_contract_set
 - shared_makefile_help_contract_set
 - shared_runner_build_tool_task_sets_contract_set
 - php_runner_contract_set
 integrity:
-  file_count: 19
-  sha256_manifest: 380a413547678b6fbfbd1378d5d925bd13ab17046c28d2c4151d639a584964f1
-  sha256_manifests: 95e6b266c07eab11e610405ecb31fa2957c1f663910aa44bb0e784121c9d713e
+  file_count: 23
+  sha256_manifest: 3b57def55e0c615dafd602880f7ed096a6e19461852d48d91b9b73b367570a49
+  sha256_manifests: 8477101ce15dc1bae0077f6f13bb66575fc3cd2c09e0b150c3f6de4711d2a372

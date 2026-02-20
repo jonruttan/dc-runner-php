@@ -8,6 +8,13 @@ title: impl assertion library exports are referenced by impl fixtures
 purpose: References impl assertion library exports for governance usage tracking.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config: {}

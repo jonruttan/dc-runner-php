@@ -28,6 +28,13 @@ contract:
       - {var: text}
       - x
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config:
@@ -61,6 +68,13 @@ contract:
       - {var: text}
       - outside
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config:
@@ -75,6 +89,13 @@ title: cli.run without entrypoint fails
 purpose: Verifies cli.run reports runtime failure when no entrypoint source is available.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: cli.run
     config:
@@ -110,6 +131,13 @@ title: cli.run rejects unknown spec-lang symbol usage
 purpose: Verifies unknown expression symbols are rejected as schema failures.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   check:
     profile: cli.run
@@ -145,6 +173,13 @@ title: cli.run exit_code mismatch is assertion failure
 purpose: Verifies cli.run reports assertion failure when observed exit code differs from expected.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/sh -c
   check:
     profile: cli.run
@@ -191,6 +226,13 @@ title: cli.run rejects unsupported harness keys
 purpose: Verifies cli.run validates supported harness keys and rejects unknown ones.
 type: contract.check
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   entrypoint: /bin/echo
   stdin_text: nope
   check:
@@ -239,6 +281,13 @@ contract:
         contain:
         - fixture-content
 harness:
+  use:
+  - ref: /specs/libraries/policy/policy_text.spec.md
+    as: lib_policy_text
+    symbols:
+    - policy.text.contains_pair
+    - policy.text.contains_all
+    - policy.text.contains_none
   check:
     profile: text.file
     config:
