@@ -25,4 +25,41 @@ final class CaseSchemaValidatorTest extends TestCase {
         ]);
         self::assertTrue(true);
     }
+
+    public function testRejectsLegacyContractKey(): void {
+        $validator = new CaseSchemaValidator();
+        $this->expectException(\RuntimeException::class);
+        $validator->validate([
+            'id' => 'x',
+            'spec_version' => 1,
+            'schema_ref' => '/specs/schema/schema_v1.md',
+            'type' => 'contract.check',
+            'contract' => [],
+            'clauses' => ['defaults' => [], 'predicates' => []],
+        ]);
+    }
+
+    public function testRejectsNonMappingClauses(): void {
+        $validator = new CaseSchemaValidator();
+        $this->expectException(\RuntimeException::class);
+        $validator->validate([
+            'id' => 'x',
+            'spec_version' => 1,
+            'schema_ref' => '/specs/schema/schema_v1.md',
+            'type' => 'contract.check',
+            'clauses' => 'not-a-map',
+        ]);
+    }
+
+    public function testRejectsLegacyClausesStepsKey(): void {
+        $validator = new CaseSchemaValidator();
+        $this->expectException(\RuntimeException::class);
+        $validator->validate([
+            'id' => 'x',
+            'spec_version' => 1,
+            'schema_ref' => '/specs/schema/schema_v1.md',
+            'type' => 'contract.check',
+            'clauses' => ['steps' => []],
+        ]);
+    }
 }
