@@ -102,12 +102,12 @@ assert_file "specs/contract/policy_v1.yaml"
 assert_file "specs/contract/traceability_v1.yaml"
 assert_file "specs/schema/index.md"
 assert_file "specs/schema/runner_reference_v1.yaml"
-assert_file "specs/schema/runner_certification_registry_v1.yaml"
+assert_file "specs/schema/runner_certification_registry_v2.yaml"
 assert_file "specs/governance/index.md"
 assert_file "specs/governance/check_sets_v1.yaml"
 assert_file "specs/governance/cases/core/index.md"
 
-for cmd in conformance spec-runner; do
+for cmd in runner-certify governance conformance spec-runner; do
   assert_runner_supports_subcommand "$cmd"
 done
 

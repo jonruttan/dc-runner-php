@@ -5,6 +5,7 @@ namespace DcRunnerPhp\Cli;
 
 use DcRunnerPhp\Cli\Command\ConformanceCommand;
 use DcRunnerPhp\Cli\Command\GovernanceCommand;
+use DcRunnerPhp\Cli\Command\RunnerCertifyCommand;
 use DcRunnerPhp\Cli\Command\SpecsRunCommand;
 use DcRunnerPhp\Support\Json;
 
@@ -15,6 +16,8 @@ final class Application {
     private $runGovernance;
     /** @var callable */
     private $runSpecsRun;
+    /** @var callable */
+    private $runRunnerCertify;
     /** @var resource */
     private $stdout;
     /** @var resource */
@@ -25,11 +28,13 @@ final class Application {
         ?callable $runGovernance = null,
         ?callable $runSpecsRun = null,
         mixed $stdout = null,
-        mixed $stderr = null
+        mixed $stderr = null,
+        ?callable $runRunnerCertify = null
     ) {
         $this->runConformance = $runConformance ?? static fn(array $args): int => (new ConformanceCommand())->run($args);
         $this->runGovernance = $runGovernance ?? static fn(array $args, bool $json): int => (new GovernanceCommand())->run($args, $json);
         $this->runSpecsRun = $runSpecsRun ?? static fn(array $args): int => (new SpecsRunCommand())->run($args);
+        $this->runRunnerCertify = $runRunnerCertify ?? static fn(array $args): int => (new RunnerCertifyCommand())->run($args);
         $this->stdout = is_resource($stdout) ? $stdout : STDOUT;
         $this->stderr = is_resource($stderr) ? $stderr : STDERR;
     }
@@ -59,6 +64,7 @@ final class Application {
         return match ($command) {
             'conformance' => ($this->runConformance)($rest),
             'governance' => ($this->runGovernance)($rest, $json),
+            'runner-certify' => ($this->runRunnerCertify)($rest),
             'specs-run', 'spec-runner' => ($this->runSpecsRun)($rest),
             default => $this->unknown($command, $json),
         };
@@ -68,7 +74,7 @@ final class Application {
         if ($json) {
             fwrite($this->stdout, Json::encode([
                 'runner' => 'dc-runner-php',
-                'commands' => ['runner --help', 'runner conformance', 'runner governance', 'runner specs-run'],
+                'commands' => ['runner --help', 'runner conformance', 'runner governance', 'runner runner-certify', 'runner specs-run'],
                 'structured_mode' => '--json'
             ]) . "\n");
             return 0;
@@ -77,6 +83,7 @@ final class Application {
         fwrite($this->stdout, "runner --help\n");
         fwrite($this->stdout, "runner conformance\n");
         fwrite($this->stdout, "runner governance\n");
+        fwrite($this->stdout, "runner runner-certify\n");
         fwrite($this->stdout, "runner specs-run\n");
         fwrite($this->stdout, "use --json for structured output\n");
         return 0;
