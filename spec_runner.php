@@ -446,9 +446,14 @@ function lintAssertionHealth(mixed $node, string $path = 'contract', ?string $gr
     if (!is_array($node)) {
         return $diags;
     }
-    $stepClass = trim((string)($node['class'] ?? ''));
-    if (in_array($stepClass, ['must', 'can', 'cannot'], true) && array_key_exists('asserts', $node)) {
-        $checks = $node['asserts'];
+    if (array_key_exists('class', $node)) {
+        return $diags;
+    }
+    if (array_key_exists('id', $node) && (array_key_exists('asserts', $node) || array_key_exists('assert', $node))) {
+        $checks = array_key_exists('assert', $node) ? $node['assert'] : $node['asserts'];
+        if (is_array($checks) && !isListArray($checks)) {
+            $checks = [$checks];
+        }
         if (is_array($checks) && isListArray($checks)) {
             $seen = [];
             foreach ($checks as $child) {
@@ -460,14 +465,14 @@ function lintAssertionHealth(mixed $node, string $path = 'contract', ?string $gr
                     $diags[] = [
                         'code' => 'AH004',
                         'path' => "{$path}.asserts",
-                        'message' => "redundant sibling assertion branch in '{$stepClass}'",
+                        'message' => "redundant sibling assertion branch in step",
                     ];
                     break;
                 }
                 $seen[$key] = true;
             }
         }
-        return array_merge($diags, lintAssertionHealth($checks, "{$path}.asserts", $stepClass));
+        return array_merge($diags, lintAssertionHealth($checks, "{$path}.asserts", $groupCtx));
     }
     foreach (['must', 'can', 'cannot'] as $group) {
         if (array_key_exists($group, $node)) {
@@ -3446,10 +3451,13 @@ function loadSpecLangLibraryDoc(string $path): array {
                 throw new SchemaError("harness.exports[{$entryIdx}] unresolved assert step id: {$stepId}");
             }
             $srcStep = $assertSteps[$stepId];
-            if (trim((string)($srcStep['class'] ?? '')) !== 'must') {
-                throw new SchemaError("harness.exports[{$entryIdx}] source assert step must use class=must");
+            if (($srcStep['required'] ?? true) !== true) {
+                throw new SchemaError("harness.exports[{$entryIdx}] source assert step must be required=true");
             }
-            $checks = $srcStep['asserts'] ?? null;
+            $checks = $srcStep['asserts'] ?? ($srcStep['assert'] ?? null);
+            if (is_array($checks) && !isListArray($checks)) {
+                $checks = [$checks];
+            }
             if (!is_array($checks) || !isListArray($checks) || count($checks) === 0) {
                 throw new SchemaError("harness.exports[{$entryIdx}] source assert step requires non-empty asserts");
             }
@@ -3657,63 +3665,57 @@ function evalAssertNode(
     if (!is_array($node)) {
         throw new SchemaError('contract node must be a mapping or list');
     }
-    $stepClass = trim((string)($node['class'] ?? ''));
-    if (in_array($stepClass, ['must', 'can', 'cannot'], true) && array_key_exists('asserts', $node)) {
+    if (array_key_exists('class', $node)) {
+        throw new SchemaError("{$path}.class is removed; use required");
+    }
+    if (array_key_exists('id', $node) && (array_key_exists('asserts', $node) || array_key_exists('assert', $node))) {
         $stepId = trim((string)($node['id'] ?? ''));
         if ($stepId === '') {
             throw new SchemaError("{$path}.id must be a non-empty string");
         }
-        $extra = array_diff(array_keys($node), ['id', 'class', 'target', 'asserts']);
+        $extra = array_diff(array_keys($node), ['id', 'required', 'priority', 'severity', 'purpose', 'target', 'asserts', 'assert']);
         if (count($extra) > 0) {
             throw new SchemaError('unknown key in contract step: ' . (string)array_values($extra)[0]);
+        }
+        $requiredRaw = $node['required'] ?? true;
+        if (!is_bool($requiredRaw)) {
+            throw new SchemaError("{$path}.required must be boolean");
+        }
+        $priorityRaw = $node['priority'] ?? 1;
+        if (!is_int($priorityRaw) || $priorityRaw < 1) {
+            throw new SchemaError("{$path}.priority must be int >= 1");
+        }
+        $severityRaw = $node['severity'] ?? 1;
+        if (!is_int($severityRaw) || $severityRaw < 1) {
+            throw new SchemaError("{$path}.severity must be int >= 1");
+        }
+        if (array_key_exists('purpose', $node) && trim((string)$node['purpose']) === '') {
+            throw new SchemaError("{$path}.purpose must be non-empty when provided");
         }
         $target = trim((string)($node['target'] ?? ''));
         if ($target === '') {
             $target = $inheritedTarget ?? '';
         }
-        $children = $node['asserts'];
-        if (!is_array($children) || !isListArray($children)) {
-            throw new SchemaError('contract step asserts must be a list');
-        }
-        if (count($children) === 0) {
-            throw new SchemaError('contract step asserts must not be empty');
+        $rawChecks = array_key_exists('assert', $node) ? $node['assert'] : ($node['asserts'] ?? null);
+        if (is_array($rawChecks) && !isListArray($rawChecks)) {
+            $children = [$rawChecks];
+        } elseif (is_array($rawChecks) && isListArray($rawChecks) && count($rawChecks) > 0) {
+            $children = $rawChecks;
+        } else {
+            throw new SchemaError('contract step assert/asserts must be a non-empty mapping or list');
         }
         $stepPath = $path;
-        if ($stepClass === 'must') {
+        try {
             foreach ($children as $i => $child) {
                 evalAssertNode($child, $target, $caseId, "{$stepPath}.asserts[{$i}]", $evalLeaf);
             }
             return;
-        }
-        if ($stepClass === 'can') {
-            $anyPassed = false;
-            foreach ($children as $i => $child) {
-                try {
-                    evalAssertNode($child, $target, $caseId, "{$stepPath}.asserts[{$i}]", $evalLeaf);
-                    $anyPassed = true;
-                    break;
-                } catch (AssertionFailure $e) {
-                    // Try next branch.
-                }
+        } catch (AssertionFailure $e) {
+            if (!$requiredRaw) {
+                return;
             }
-            if (!$anyPassed) {
-                throw new AssertionFailure("all 'can' branches failed");
-            }
-            return;
+            throw $e;
         }
-        $passed = 0;
-        foreach ($children as $i => $child) {
-            try {
-                evalAssertNode($child, $target, $caseId, "{$stepPath}.asserts[{$i}]", $evalLeaf);
-                $passed += 1;
-            } catch (AssertionFailure $e) {
-                // Expected failing branch for cannot.
-            }
-        }
-        if ($passed > 0) {
-            throw new AssertionFailure("'cannot' failed: {$passed} branch(es) passed");
-        }
-        return;
     }
     $target = $inheritedTarget;
     if (array_key_exists('target', $node)) {
