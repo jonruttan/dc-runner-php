@@ -1,5 +1,3 @@
-# Runner Build Tool Required Core Tasks
-
 ```yaml contract-spec
 id: DCCONF-BTOOL-001
 spec_version: 1

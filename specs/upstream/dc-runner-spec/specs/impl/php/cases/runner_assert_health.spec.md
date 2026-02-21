@@ -1,7 +1,3 @@
-# PHP Spec Runner Assertion Health Cases
-
-## DCIMPL-PHP-AH-001
-
 ```yaml contract-spec
 id: DCIMPL-PHP-AH-001
 title: cli.run warn mode emits diagnostics without failing
@@ -46,7 +42,6 @@ contract:
       - ok
 ```
 
-## DCIMPL-PHP-AH-002
 
 ```yaml contract-spec
 id: DCIMPL-PHP-AH-002
@@ -94,7 +89,6 @@ contract:
       - ok
 ```
 
-## DCIMPL-PHP-AH-003
 
 ```yaml contract-spec
 id: DCIMPL-PHP-AH-003
@@ -139,7 +133,6 @@ contract:
       - ok
 ```
 
-## DCIMPL-PHP-AH-004
 
 ```yaml contract-spec
 id: DCIMPL-PHP-AH-004
@@ -183,7 +176,6 @@ contract:
       - ok
 ```
 
-## DCIMPL-PHP-AH-005
 
 ```yaml contract-spec
 id: DCIMPL-PHP-AH-005

@@ -1,7 +1,3 @@
-# PHP Spec Runner Portability Cases
-
-## DCIMPL-PHP-PORT-001
-
 ```yaml contract-spec
 id: DCIMPL-PHP-PORT-001
 title: shell command via sh -c works when shell exists
@@ -41,7 +37,6 @@ contract:
       - port-shell-ok
 ```
 
-## DCIMPL-PHP-PORT-002
 
 ```yaml contract-spec
 id: DCIMPL-PHP-PORT-002
@@ -85,7 +80,6 @@ contract:
       - x:true y:7
 ```
 
-## DCIMPL-PHP-PORT-003
 
 ```yaml contract-spec
 id: DCIMPL-PHP-PORT-003

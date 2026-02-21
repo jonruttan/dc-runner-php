@@ -1,7 +1,3 @@
-# PHP Spec Runner Library Export References
-
-## DCIMPL-PHP-RUN-LIB-001
-
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-LIB-001
 title: impl assertion library exports are referenced by impl fixtures

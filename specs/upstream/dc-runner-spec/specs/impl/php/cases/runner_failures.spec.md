@@ -1,7 +1,3 @@
-# PHP Spec Runner Expected Failure Cases
-
-## DCIMPL-PHP-RUN-F001
-
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F001
 title: text.file virtual absolute path missing file fails runtime
@@ -41,7 +37,6 @@ harness:
       path: /tmp/not-allowed.txt
 ```
 
-## DCIMPL-PHP-RUN-F002
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F002
@@ -81,7 +76,6 @@ harness:
       path: ../../../../../../outside.txt
 ```
 
-## DCIMPL-PHP-RUN-F003
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F003
@@ -123,7 +117,6 @@ contract:
       - x
 ```
 
-## DCIMPL-PHP-RUN-F004
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F004
@@ -165,7 +158,6 @@ contract:
       - {var: stdout}
 ```
 
-## DCIMPL-PHP-RUN-F005
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F005
@@ -199,7 +191,6 @@ contract:
   steps: []
 ```
 
-## DCIMPL-PHP-RUN-F006
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F006
@@ -218,7 +209,6 @@ contract:
   steps: []
 ```
 
-## DCIMPL-PHP-RUN-F007
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F007
@@ -253,7 +243,6 @@ contract:
   steps: []
 ```
 
-## DCIMPL-PHP-RUN-F008
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-F008

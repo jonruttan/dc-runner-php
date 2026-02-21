@@ -1,7 +1,3 @@
-# PHP Spec Runner Pass Cases
-
-## DCIMPL-PHP-RUN-001
-
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-001
 title: text.file default target uses containing spec file
@@ -37,7 +33,6 @@ harness:
     config: {}
 ```
 
-## DCIMPL-PHP-RUN-002
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-002
@@ -75,7 +70,6 @@ harness:
       path: /fixtures/sample.txt
 ```
 
-## DCIMPL-PHP-RUN-003
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-003
@@ -116,7 +110,6 @@ harness:
       path: /fixtures/sample.txt
 ```
 
-## DCIMPL-PHP-RUN-004
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-004
@@ -157,7 +150,6 @@ contract:
       - hello-runner
 ```
 
-## DCIMPL-PHP-RUN-005
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-005
@@ -200,7 +192,6 @@ contract:
       - 'on'
 ```
 
-## DCIMPL-PHP-RUN-006
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-006
@@ -241,7 +232,6 @@ contract:
       - fallback-ok
 ```
 
-## DCIMPL-PHP-RUN-007
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-007
@@ -283,7 +273,6 @@ contract:
       - list
 ```
 
-## DCIMPL-PHP-RUN-008
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-008
@@ -324,7 +313,6 @@ contract:
       - runner-err
 ```
 
-## DCIMPL-PHP-RUN-009
 
 ```yaml contract-spec
 id: DCIMPL-PHP-RUN-009

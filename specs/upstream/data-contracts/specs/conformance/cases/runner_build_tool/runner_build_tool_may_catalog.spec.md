@@ -1,5 +1,3 @@
-# Runner Build Tool Optional Task Catalog
-
 ```yaml contract-spec
 id: DCCONF-BTOOL-004
 spec_version: 1

@@ -1,5 +1,3 @@
-# Runner Build Tool Manifest Path Contract
-
 ```yaml contract-spec
 id: DCCONF-BTOOL-005
 spec_version: 1

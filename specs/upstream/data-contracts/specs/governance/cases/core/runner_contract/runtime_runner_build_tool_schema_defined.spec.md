@@ -1,7 +1,3 @@
-# Governance Cases
-
-## DCGOV-RUNTIME-BTOOL-002
-
 ```yaml contract-spec
 id: DCGOV-RUNTIME-BTOOL-002
 spec_version: 1

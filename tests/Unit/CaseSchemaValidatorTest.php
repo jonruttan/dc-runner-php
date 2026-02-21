@@ -21,7 +21,7 @@ final class CaseSchemaValidatorTest extends TestCase {
             'schema_ref' => '/specs/schema/schema_v1.md',
             'type' => 'contract.check',
             'harness' => ['check' => ['profile' => 'text.file', 'config' => []]],
-            'contract' => ['defaults' => ['class' => 'MUST'], 'steps' => []],
+            'clauses' => ['defaults' => [], 'predicates' => []],
         ]);
         self::assertTrue(true);
     }

@@ -1,5 +1,3 @@
-# Runner Build Tool Required Compat Task
-
 ```yaml contract-spec
 id: DCCONF-BTOOL-003
 spec_version: 1

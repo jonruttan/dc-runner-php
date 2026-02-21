@@ -1,5 +1,3 @@
-# Runner Build Tool Required Sync Tasks
-
 ```yaml contract-spec
 id: DCCONF-BTOOL-002
 spec_version: 1
