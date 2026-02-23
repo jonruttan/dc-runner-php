@@ -22,7 +22,7 @@ contract:
       - '# PHP Spec Runner Pass Cases'
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -58,7 +58,7 @@ contract:
       - fixture-content
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -98,7 +98,7 @@ contract:
       - fixture-content
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -118,7 +118,7 @@ purpose: Verifies cli.run executes explicit harness entrypoint with argv argumen
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -158,7 +158,7 @@ purpose: Verifies cli.run applies harness env values to the subprocess environme
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -200,7 +200,7 @@ purpose: Verifies cli.run executes when harness entrypoint is explicitly provide
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -240,7 +240,7 @@ purpose: Verifies json parsing and type checks can be expressed via std.* mappin
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -281,7 +281,7 @@ purpose: Verifies stderr target assertions using a command that writes to stderr
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -321,7 +321,7 @@ purpose: Verifies path-based assertions for stdout_path existence and stdout_pat
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair

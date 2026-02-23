@@ -59,5 +59,5 @@ capabilities.
 
 This contract is independent of portable runtime CLI contract requirements in:
 
-- `/specs/contract/29_runner_cli_interface.md`
-- `/specs/schema/runner_cli_contract_v1.yaml`
+- `/specs/02_contracts/29_runner_cli_interface.md`
+- `/specs/01_schema/runner_cli_contract_v1.yaml`

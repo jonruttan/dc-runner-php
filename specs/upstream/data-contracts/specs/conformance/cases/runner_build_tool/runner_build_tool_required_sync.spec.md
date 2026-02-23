@@ -1,7 +1,7 @@
 ```yaml contract-spec
 id: DCCONF-BTOOL-002
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 title: runner build tool contract defines required sync tasks
 purpose: Portable build tool contract must define spec-sync and spec-sync-check required tasks.
 type: contract.check

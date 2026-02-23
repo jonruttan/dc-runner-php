@@ -1,7 +1,7 @@
 ```yaml contract-spec
 id: DCCONF-BTOOL-001
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 title: runner build tool contract defines required core tasks
 purpose: Portable build tool contract must define build, test, and verify required tasks.
 type: contract.check

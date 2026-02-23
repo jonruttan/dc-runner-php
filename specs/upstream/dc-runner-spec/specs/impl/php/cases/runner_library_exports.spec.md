@@ -5,7 +5,7 @@ purpose: References impl assertion library exports for governance usage tracking
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -15,7 +15,7 @@ harness:
     profile: text.file
     config: {}
   use:
-  - ref: /specs/libraries/impl/assertion_core.spec.md
+  - ref: /specs/05_libraries/impl/assertion_core.spec.md
     as: lib_assertion_core_spec
     symbols:
     - impl.assert.contains

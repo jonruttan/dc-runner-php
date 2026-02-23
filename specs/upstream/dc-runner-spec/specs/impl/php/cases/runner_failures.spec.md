@@ -25,7 +25,7 @@ contract:
       - x
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -64,7 +64,7 @@ contract:
       - outside
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -84,7 +84,7 @@ purpose: Verifies cli.run reports runtime failure when no entrypoint source is a
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -125,7 +125,7 @@ purpose: Verifies unknown expression symbols are rejected as schema failures.
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -166,7 +166,7 @@ purpose: Verifies cli.run reports assertion failure when observed exit code diff
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -217,7 +217,7 @@ purpose: Verifies cli.run validates supported harness keys and rejects unknown o
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -271,7 +271,7 @@ contract:
         - fixture-content
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair

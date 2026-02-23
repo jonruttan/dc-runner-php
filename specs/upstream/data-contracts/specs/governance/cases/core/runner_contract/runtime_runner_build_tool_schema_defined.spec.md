@@ -1,7 +1,7 @@
 ```yaml contract-spec
 id: DCGOV-RUNTIME-BTOOL-002
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 title: runner build tool contract schema is defined
 purpose: Ensures tool-agnostic build tool schema is present in schema index.
 type: contract.check
@@ -20,5 +20,5 @@ contract:
       assert:
         std.string.contains:
           - {var: text}
-          - /specs/schema/runner_build_tool_contract_v1.yaml
+          - /specs/01_schema/runner_build_tool_contract_v1.yaml
 ```

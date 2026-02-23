@@ -1,7 +1,7 @@
 ```yaml contract-spec
 id: DCCONF-BTOOL-005
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 title: runner build tool contract declares manifest path requirement
 purpose: Build tool command contract must require each runner repository to publish a task map manifest path.
 type: contract.check

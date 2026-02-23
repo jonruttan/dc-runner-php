@@ -6,7 +6,7 @@ purpose: Verifies assert_health warn mode on cli.run preserves pass outcome whil
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -51,7 +51,7 @@ purpose: Verifies assert_health error mode on cli.run converts assertion-health 
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -97,7 +97,7 @@ purpose: Verifies invalid assert_health mode values are rejected as schema error
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -142,7 +142,7 @@ purpose: Verifies SPEC_RUNNER_ASSERT_HEALTH controls diagnostics when assert_hea
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -185,7 +185,7 @@ purpose: Verifies assert_health.mode ignore suppresses diagnostics even when glo
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair

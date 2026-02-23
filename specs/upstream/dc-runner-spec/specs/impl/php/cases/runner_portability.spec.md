@@ -5,7 +5,7 @@ purpose: Captures a shell-based cli.run case to detect environments where sh is 
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -45,7 +45,7 @@ purpose: Verifies env values passed through cli.run are observed as strings by c
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
@@ -88,7 +88,7 @@ purpose: Detects portability differences in cwd/path handling for stdout_path as
 type: contract.check
 harness:
   use:
-  - ref: /specs/libraries/policy/policy_text.spec.md
+  - ref: /specs/05_libraries/policy/policy_text.spec.md
     as: lib_policy_text
     symbols:
     - policy.text.contains_pair
