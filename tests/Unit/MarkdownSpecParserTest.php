@@ -15,7 +15,7 @@ final class MarkdownSpecParserTest extends TestCase {
 
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 defaults: { type: contract.check }
 contracts:
   - id: T-1
@@ -71,7 +71,7 @@ MD);
         file_put_contents($fixtureFile, <<<MD
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 contracts: []
 ```
 MD);
@@ -84,7 +84,7 @@ MD);
         file_put_contents($fixtureFile, <<<MD
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 defaults: bad
 contracts:
   - id: T-1
@@ -101,7 +101,7 @@ MD);
         file_put_contents($fixtureFile, <<<MD
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 contracts:
   - bad
 ```
@@ -115,7 +115,7 @@ MD);
         file_put_contents($fixtureFile, <<<MD
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 defaults: { type: contract.check }
 contracts:
   - clauses: { defaults: {}, predicates: [] }
@@ -130,7 +130,7 @@ MD);
         file_put_contents($fixtureFile, <<<MD
 ```yaml contract-spec
 spec_version: 1
-schema_ref: /specs/schema/schema_v1.md
+schema_ref: /specs/01_schema/schema_v1.md
 contracts:
   - id: T-1
     clauses: { defaults: {}, predicates: [] }

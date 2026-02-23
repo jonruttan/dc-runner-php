@@ -34,8 +34,8 @@ final class RunnerCertifyCommand {
         }
 
         $registryCandidates = [
-            rtrim($root, '/').'/specs/schema/runner_certification_registry_v2.yaml',
-            rtrim($root, '/').'/specs/upstream/data-contracts/specs/schema/runner_certification_registry_v2.yaml',
+            rtrim($root, '/').'/specs/01_schema/runner_certification_registry_v1.yaml',
+            rtrim($root, '/').'/specs/upstream/data-contracts/specs/01_schema/runner_certification_registry_v1.yaml',
         ];
         $registryPath = null;
         $registry = null;
@@ -47,10 +47,10 @@ final class RunnerCertifyCommand {
             }
         }
         if (!is_string($registryPath) || !is_array($registry)) {
-            fwrite(STDERR, "ERROR: runner certification registry v2 not found\n");
+            fwrite(STDERR, "ERROR: runner certification registry v1 not found\n");
             return 2;
         }
-        if ((int)($registry['version'] ?? 0) !== 2) {
+        if ((int)($registry['version'] ?? 0) !== 1) {
             fwrite(STDERR, "ERROR: unsupported registry version in {$registryPath}\n");
             return 2;
         }
@@ -170,8 +170,8 @@ final class RunnerCertifyCommand {
                 'required_core_cases' => $caseList,
                 'command_contract_subset' => $subset,
                 'registry_ref' => [
-                    'path' => '/specs/schema/runner_certification_registry_v2.yaml',
-                    'version' => 2,
+                    'path' => '/specs/01_schema/runner_certification_registry_v1.yaml',
+                    'version' => 1,
                 ],
             ];
         };
@@ -211,7 +211,7 @@ final class RunnerCertifyCommand {
         $implementationRepo = trim((string)($entry['entrypoints']['implementation_repo'] ?? 'unknown'));
 
         $payload = [
-            'version' => 2,
+            'version' => 1,
             'runner' => [
                 'runner_id' => $runnerId,
                 'class' => $runnerClass,

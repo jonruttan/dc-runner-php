@@ -18,7 +18,7 @@ final class CaseSchemaValidatorTest extends TestCase {
         $validator->validate([
             'id' => 'x',
             'spec_version' => 1,
-            'schema_ref' => '/specs/schema/schema_v1.md',
+            'schema_ref' => '/specs/01_schema/schema_v1.md',
             'type' => 'contract.check',
             'harness' => ['check' => ['profile' => 'text.file', 'config' => []]],
             'clauses' => ['defaults' => [], 'predicates' => []],
@@ -32,7 +32,7 @@ final class CaseSchemaValidatorTest extends TestCase {
         $validator->validate([
             'id' => 'x',
             'spec_version' => 1,
-            'schema_ref' => '/specs/schema/schema_v1.md',
+            'schema_ref' => '/specs/01_schema/schema_v1.md',
             'type' => 'contract.check',
             'contract' => [],
             'clauses' => ['defaults' => [], 'predicates' => []],
@@ -45,7 +45,7 @@ final class CaseSchemaValidatorTest extends TestCase {
         $validator->validate([
             'id' => 'x',
             'spec_version' => 1,
-            'schema_ref' => '/specs/schema/schema_v1.md',
+            'schema_ref' => '/specs/01_schema/schema_v1.md',
             'type' => 'contract.check',
             'clauses' => 'not-a-map',
         ]);
@@ -57,7 +57,7 @@ final class CaseSchemaValidatorTest extends TestCase {
         $validator->validate([
             'id' => 'x',
             'spec_version' => 1,
-            'schema_ref' => '/specs/schema/schema_v1.md',
+            'schema_ref' => '/specs/01_schema/schema_v1.md',
             'type' => 'contract.check',
             'clauses' => ['steps' => []],
         ]);

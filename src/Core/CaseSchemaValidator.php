@@ -11,13 +11,13 @@ final class CaseSchemaValidator {
             }
         }
         if (array_key_exists('contract', $case)) {
-            throw new \RuntimeException("legacy key contract is forbidden; use clauses");
+            throw new \RuntimeException("noncanonical key contract is forbidden; use clauses");
         }
         if (!is_array($case['clauses'])) {
             throw new \RuntimeException("clauses must be a mapping");
         }
         if (array_key_exists('steps', $case['clauses'])) {
-            throw new \RuntimeException("legacy key clauses.steps is forbidden; use clauses.predicates");
+            throw new \RuntimeException("noncanonical key clauses.steps is forbidden; use clauses.predicates");
         }
     }
 }

@@ -12,7 +12,7 @@ final class ExecutionEngine {
         $results = [];
         foreach ($cases as $case) {
             $id = (string)($case['id'] ?? 'UNKNOWN');
-            $results[] = ['id' => $id, 'status' => 'skip', 'category' => 'runtime', 'message' => 'execution delegated to legacy engine'];
+            $results[] = ['id' => $id, 'status' => 'skip', 'category' => 'runtime', 'message' => 'execution delegated to noncanonical engine'];
         }
         return $results;
     }
