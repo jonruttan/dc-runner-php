@@ -86,7 +86,7 @@ make runner-spec-check
 - Global contracts snapshot:
   - `/specs/upstream/data-contracts/`
 - Runner-specific contracts snapshot:
-  - `/specs/upstream/dc-runner-spec/specs/impl/php/`
+  - `/specs/upstream/data-contracts-library/specs/07_runner_behavior/impl/php/`
 - Local pointer only:
   - `/specs/impl/php/index.md`
 
