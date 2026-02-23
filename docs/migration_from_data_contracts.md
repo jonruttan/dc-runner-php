@@ -7,8 +7,8 @@ Former locations in `data-contracts`:
 - `specs/impl/**` implementation narratives
 
 Canonical runner-specific spec ownership now lives in:
-- `data-contracts-library/specs/impl/php/`
+- `data-contracts-runner/specs/impl/php/`
 
 This repository consumes that canonical source via:
-- `/specs/upstream/data-contracts-library/specs/07_runner_behavior/impl/php/`
+- `/specs/impl/php/`
 - `/specs/impl/php/index.md` (local pointer)
